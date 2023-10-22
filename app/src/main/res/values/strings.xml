@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Quiz</string>
+    <string name="question1">Czy linux jest najlepszy?</string>
+    <string name="question2">Czy windows jest najlepszy?</string>
+    <string name="question3">Czy C# to marna podroba Javy?</string>
+    <string name="question4">Czy na archu mozna skonfigurowac drukarke?</string>
+    <string name="question5">Czy da sie to zrobic przez pierwszy rok uzytkowania?</string>
+    <string name="button_true">Prawda</string>
+    <string name="button_false">Falsz</string>
+    <string name="button_next">Nastepne</string>
+</resources>
