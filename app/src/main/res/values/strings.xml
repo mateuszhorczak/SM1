@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">Quiz</string>
-    <string name="question1">Czy linux jest najlepszy?</string>
-    <string name="question2">Czy windows jest najlepszy?</string>
-    <string name="question3">Czy C# to marna podroba Javy?</string>
-    <string name="question4">Czy na archu mozna skonfigurowac drukarke?</string>
-    <string name="question5">Czy da sie to zrobic przez pierwszy rok uzytkowania?</string>
+    <string name="question1">Język Python jest interpetowalny.</string>
+    <string name="question2">Ram to skrót od "Read-Only Memory".</string>
+    <string name="question3">HTML to skrót od "Hyper Text Markup Language".</string>
+    <string name="question4">Bit to najmniejsza jednostka danych w komputerze.</string>
+    <string name="question5">Linux jest systemem operacyjnym typu open source.</string>
     <string name="button_true">Prawda</string>
     <string name="button_false">Falsz</string>
     <string name="button_next">Nastepne</string>

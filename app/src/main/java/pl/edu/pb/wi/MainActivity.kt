@@ -62,7 +62,7 @@ val questionList: Array<Question> = arrayOf(
     Question(R.string.question2, false),
     Question(R.string.question3, true),
     Question(R.string.question4, true),
-    Question(R.string.question5, false),
+    Question(R.string.question5, true),
 )
 
 
