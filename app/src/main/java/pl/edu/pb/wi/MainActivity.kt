@@ -2,6 +2,7 @@ package pl.edu.pb.wi
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -23,10 +24,11 @@ import androidx.compose.material3.Surface
 
 
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +37,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pl.edu.pb.wi.ui.theme.QuizTheme
@@ -54,6 +57,32 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("MainActivity", "onStart wywołane")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("MainActivity", "onResume wywołane")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity", "onPause wywołane")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("MainActivity", "onStop wywołane")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("MainActivity", "onDestroy wywołane")
+    }
+
 }
 
 
@@ -100,16 +129,65 @@ fun ScoreScreen(score: Int, onRestartQuiz: () -> Unit) {
     }
 }
 
+@Composable
+fun HintDialog(
+    hint: String,
+    onDismiss: () -> Unit,
+    isOpen: Boolean
+) {
+    if (isOpen) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Podpowiedź") },
+            text = { Text(hint) },
+            confirmButton = {
+                TextButton(
+                    onClick = onDismiss
+                ) {
+                    Text("Zamknij")
+                }
+            }
+        )
+    }
+}
+
+
+@Composable
+fun AfterHintDialog(
+    hint: String,
+    onDismiss: () -> Unit,
+    isOpen: Boolean
+) {
+    if (isOpen) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Sprawdziłeś odpowiedź!") },
+            text = { Text(hint) },
+            confirmButton = {
+                TextButton(
+                    onClick = onDismiss
+                ) {
+                    Text("Zamknij")
+                }
+            }
+        )
+    }
+}
+
 
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun QuizScreen() {
-    var currentQuestionIndex by remember { mutableStateOf(0) }
-    var userAnswer: Boolean? by remember { mutableStateOf(null) }
-    var showDialog by remember { mutableStateOf(false) }
-    var scores by remember { mutableStateOf(MutableList(5) { 0 }) }
-    var showScoreScreen by remember { mutableStateOf(false) }
-    var sumScore by remember { mutableStateOf(0) }
+    var currentQuestionIndex by rememberSaveable { mutableStateOf(0) }
+    var userAnswer: Boolean? by rememberSaveable { mutableStateOf(null) }
+    var showDialog by rememberSaveable { mutableStateOf(false) }
+    var scores by rememberSaveable { mutableStateOf(MutableList(5) { 0 }) }
+    var showScoreScreen by rememberSaveable { mutableStateOf(false) }
+    var sumScore by rememberSaveable { mutableStateOf(0) }
+    var showAnswerDialog by rememberSaveable { mutableStateOf(false) }
+    var showHintDialog by rememberSaveable { mutableStateOf(false) }
+    var answerWasShown by rememberSaveable { mutableStateOf(false) }
+    var tryAnswerQuestion by rememberSaveable { mutableStateOf(false) }
 
 
     fun showAnswerDialog() {
@@ -144,6 +222,7 @@ fun QuizScreen() {
             AlertDialog(
                 onDismissRequest = {
                     currentQuestionIndex++
+                    answerWasShown = false
                     userAnswer = null
                     showDialog = false
                 },
@@ -172,6 +251,7 @@ fun QuizScreen() {
                         onClick = {
                             showDialog = false
                             currentQuestionIndex++
+                            answerWasShown = false
                             userAnswer = null
                         }
                     ) {
@@ -202,7 +282,8 @@ fun QuizScreen() {
                     text = stringResource(id = questionList[currentQuestionIndex].getQuestionId()),
                     color = Color.White,
                     fontSize = 25.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
 
                 Row(
@@ -213,7 +294,13 @@ fun QuizScreen() {
                     Button(
                         onClick = {
                             userAnswer = true
-                            showAnswerDialog()
+                            if (!answerWasShown) {
+                                showAnswerDialog()
+                            }
+                            else {
+                                tryAnswerQuestion = true
+                            }
+
                         },
                         modifier = Modifier.padding(8.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -229,7 +316,12 @@ fun QuizScreen() {
                     Button(
                         onClick = {
                             userAnswer = false
-                            showAnswerDialog()
+                            if (!answerWasShown) {
+                                showAnswerDialog()
+                            }
+                            else {
+                                tryAnswerQuestion = true
+                            }
                         },
                         modifier = Modifier.padding(8.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -243,14 +335,67 @@ fun QuizScreen() {
 
                 Button(
                     onClick = {
+                        answerWasShown = false
                         currentQuestionIndex++
+                        answerWasShown = false
                         userAnswer = null
                     },
                     modifier = Modifier.padding(8.dp)
                 ) {
                     Text(text = "NASTEPNE PYTANIE")
                 }
+
+                Button(onClick = { showAnswerDialog = true }) {
+                    Text("Pokaż odpowiedź")
+                }
+
+                if (showAnswerDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showAnswerDialog = false },
+                        title = { Text("Czy na pewno chcesz zobaczyć odpowiedź?") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    showHintDialog = true
+                                    showAnswerDialog = false
+                                }
+                            ) {
+                                Text("Pokaż odpowiedź")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { showAnswerDialog = false }
+                            ) {
+                                Text("Anuluj")
+                            }
+                        }
+                    )
+                }
+
+
+                if (answerWasShown && tryAnswerQuestion) {
+                    AfterHintDialog(
+                        hint = "Nie możesz odpowiedzieć na to pytanie!",
+                        isOpen = true,
+                        onDismiss = { tryAnswerQuestion = false }
+                    )
+                }
+                
+
+                if (showHintDialog) {
+                    answerWasShown = true;
+                    HintDialog(
+                        hint = "Odpowiedź: " + if (questionList[currentQuestionIndex].isTrueAnswer()) "Prawda" else "Fałsz",
+                        isOpen = true,
+                        onDismiss = { showHintDialog = false }
+                    )
+                }
             }
         }
     }
 }
+
+
+
+
